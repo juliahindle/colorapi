@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<style>
+h1
+{
+	font-size: 4em;
+	text-align: center;
+}
+
+#data
+{
+	display: grid;
+	grid-template-columns: auto auto auto auto auto;
+	margin: 30px;
+}
+.color
+{
+	text-align: center;
+	/*width: 200px;*/
+	font-size: 24px;
+	height: 130px;
+	padding-top: 70px;
+	color: white;
+}
+b
+{
+	/*mix-blend-mode: difference;*/
+}
+</style>
+<head>
+	<title>Color API</title>
+	<meta charset="utf-8"/>
+	<script>
+		
+		function helper(link)
+		{
+			request = new XMLHttpRequest();
+			request.open("GET", link);
+			request.onreadystatechange = function() 
+			{
+				if (request.readyState == 4 && request.status == 200) 
+				{
+					result = request.responseText;
+					colors = JSON.parse(result);
+
+					for (j = 0; j < colors["records"].length; j++)
+					{
+						color = colors["records"][j];
+
+						text_color = "black";
+						hex = parseInt(color["hex"].slice(1, 7), 16);
+						r = (hex >> 16) & 0xff;  // extract red
+						g = (hex >>  8) & 0xff;  // extract green
+						b = (hex >>  0) & 0xff;  // extract blue
+						// alert(r + " " + g + " " + b);
+						luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+						if (luma < 75) text_color = "white";
+
+						document.getElementById("data").innerHTML += "<div class='color' style='color:" + text_color+ "; background-color:" + color["hex"] + ";'>" + color["name"] + "</br>" + color["hex"] + "</div>";
+					}
+
+					link = colors["info"]["next"];
+					if (link != undefined) helper(link);
+				}
+ 			}
+ 			request.send();
+		}
+
+		function getColors() 
+		{
+ 			link = "https://api.harvardartmuseums.org/color?apikey=2ad33010-76f5-11ea-a37b-5bd95e849318";
+ 			
+ 			helper(link);
+		}
+	</script>
+</head>
+
+
+<body onload="getColors()">
+
+	<h1>Harvard Art Museum Color Index</h1>
+	<div id="data"></div>
+</body>
+</html>
